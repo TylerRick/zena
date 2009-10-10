@@ -72,24 +72,21 @@ class ImageContent < DocumentContent
   def width(format=nil)
     if format.nil? || format.size == :keep
       self[:width]
+    elsif img = image_with_format(format)
+      img.width
     else
-      image_with_format(format).width
+      0
     end
-  rescue StandardError
-    # something went wrong (could not find file)
-    0
   end
   
   # Return the height in pixels for an image at the given format.
   def height(format=nil)
     if format.nil? || format.size == :keep
       self[:height]
+    elsif img = image_with_format(format)
+      img.height
     else
-      if img = image_with_format(format)
-        img.height
-      else
-        nil
-      end
+      0
     end
   end
   
@@ -114,8 +111,11 @@ class ImageContent < DocumentContent
       @formats[format[:name]] ||= ImageBuilder.new(:path=>filepath, 
               :width=>self[:width], :height=>self[:height]).transform!(format)
     else
-      raise StandardError, "No image to work on"
+      nil
     end
+  rescue StandardError
+    # something went wrong (could not find file)
+    nil
   end
   
   def exif
